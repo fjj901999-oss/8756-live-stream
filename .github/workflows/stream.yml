@@ -1,0 +1,24 @@
+name: 24/7 Continuous YouTube Live Stream
+
+on:
+  workflow_dispatch: 
+  schedule:
+    - cron: '0 */6 * * *' 
+
+jobs:
+  live_stream:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Install FFmpeg
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+
+    - name: Start Infinite Loop Stream
+      env:
+        STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+      run: |
+        ffmpeg -dead_one_shot_timeout 10000000 -stream_loop -1 -loop 1 -i thumbnail.jpg -i music.mp3 -vcodec libx264 -pix_fmt yuv420p -maxrate 2048k -bufsize 4096k -g 60 -acodec aac -b:a 128k -ar 44100 -f flv "rtmp://://youtube.com"
